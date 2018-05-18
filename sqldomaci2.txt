@@ -1,0 +1,673 @@
+* 1. Napisati upit koji ispisuje gradove sa sledećim informacijama: naziv države, naziv regije, naziv grada:
+
+	SELECT
+    cities.name AS 'Naziv grada',
+    states.name AS 'Naziv regije',
+    countries.name AS 'Naziv drzave'
+FROM
+    cities
+LEFT JOIN states ON cities.state_id = states.id
+LEFT JOIN countries ON states.country_id = countries.id
+
+2. Napisati upit koji ispisuje gradove koji imaju populaciju milion ili više, sortiranim po populaciji opadajuće, sa sledećim informacijama: kratki kod države, naziv države, naziv grada, populacija:
+
+	SELECT
+    countries.shortname AS 'Kod drzave',
+    countries.name AS 'Naziv drzave',
+    cities.name AS 'Naziv grada',
+    cities.population AS 'Populacija'
+FROM
+    cities
+INNER JOIN states ON cities.state_id = states.id
+INNER JOIN countries ON states.country_id = countries.id AND cities.population >= 1000000
+GROUP BY
+    countries.name
+ORDER BY
+    cities.population
+DESC
+____________________________-
+SELECT
+    countries.shortname AS 'Kod drzave',
+    countries.name AS 'Naziv drzave',
+    cities.name AS 'Naziv grada',
+    cities.population AS 'Populacija'
+FROM
+    cities
+LEFT JOIN states ON cities.state_id = states.id
+LEFT JOIN countries ON states.country_id = countries.id WHERE cities.population >= 1000000
+ORDER BY
+    cities.population
+DESC
+    
+
+* 3. Napisati upit koji prikazuje gradove za koje je populacija 0 sa kolonama: naziv države, naziv regije, naziv grada:
+
+	SELECT
+    countries.name AS 'Naziv drzave',
+    states.name AS 'Naziv regije',
+    cities.name AS 'Naziv grada',
+    cities.population AS 'Populacija'
+FROM
+    cities
+INNER JOIN states ON cities.state_id = states.id AND cities.population = 0
+INNER JOIN countries ON states.country_id = countries.id
+____________________________
+SELECT
+    countries.name AS 'Naziv drzave',
+    states.name AS 'Naziv regije',
+    cities.name AS 'Naziv grada',
+    cities.population AS 'Populacija'
+FROM
+    cities
+LEFT JOIN states ON cities.state_id = states.id
+LEFT JOIN countries ON states.country_id = countries.id
+HAVING cities.population = 0
+ORDER BY
+    cities.population
+
+
+
+* 4. Napisati upit koji prikazuje broj gradova za koje je populacija 0:
+
+	SELECT COUNT(id) FROM cities WHERE cities.population = 0
+
+* 5. Napisati upit koji prikazuje regije zajedno sa brojem stanovnika u regiji, polja koja se prikazuju su: naziv države, naziv regije, broj stanovnika u regiji:
+
+	SELECT
+    drzave.name 'Naziv drzave',
+    regije.name 'Naziv regije',
+    populacija 'Broj stanovnika u regiji'
+FROM
+    states
+INNER JOIN(
+    SELECT
+        *,
+        SUM(population) populacija
+    FROM
+        cities
+    GROUP BY
+        state_id
+) AS gradovi
+ON
+    gradovi.state_id = states.id
+INNER JOIN(
+    SELECT
+        *
+    FROM
+        states
+    GROUP BY
+        id
+) AS regije
+ON
+    regije.id = gradovi.state_id
+INNER JOIN(
+    SELECT
+        *
+    FROM
+        countries
+    GROUP BY
+        id
+) AS drzave
+ON
+    regije.country_id = drzave.id
+GROUP BY
+    gradovi.state_id
+ORDER BY
+    populacija
+DESC
+
+____________________________
+SELECT countries.name, states.name, IFNULL(SUM(cities.population), 0)
+FROM cities 
+RIGHT JOIN states 
+on cities.state_id = states.id 
+LEFT JOIN countries 
+ON states.country_id = countries.id
+GROUP BY states.id
+
+
+* 6. Napisati upit koji pronalazi 10 regija sa najviše stanovnika, polja koja se prikazuju su: naziv države, naziv regije, broj stanovnika u regiji:
+	
+	SELECT
+    drzave.name 'Naziv drzave',
+    regije.name 'Naziv regije',
+    populacija 'Broj stanovnika u regiji'
+FROM
+    states
+INNER JOIN(
+    SELECT
+        *,
+        SUM(population) populacija
+    FROM
+        cities
+    GROUP BY
+        state_id
+) AS gradovi
+ON
+    gradovi.state_id = states.id
+INNER JOIN(
+    SELECT
+        *
+    FROM
+        states
+    GROUP BY
+        id
+) AS regije
+ON
+    regije.id = gradovi.state_id
+INNER JOIN(
+    SELECT
+        *
+    FROM
+        countries
+    GROUP BY
+        id
+) AS drzave
+ON
+    regije.country_id = drzave.id
+GROUP BY
+    gradovi.state_id
+ORDER BY
+    populacija
+DESC LIMIT 10
+____________________________
+SELECT countries.name AS 'Naziv drzave', states.name AS 'Naziv regije', SUM(cities.population) AS broj_stanovnika
+FROM cities 
+RIGHT JOIN states 
+on cities.state_id = states.id 
+LEFT JOIN countries 
+ON states.country_id = countries.id
+GROUP BY states.id
+ORDER BY broj_stanovnika DESC LIMIT 10
+    
+
+* 7. Napisati upit koji pronalazi regije sa brojem stanovnika većim od milion, polja koja se prikazuju su: naziv države, naziv regije, broj stanovnika u regiji:
+
+	SELECT
+    drzave.name 'Naziv drzave',
+    regije.name 'Naziv regije',
+    populacija 'Broj stanovnika u regiji'
+FROM
+    states
+INNER JOIN(
+    SELECT
+        *,
+        SUM(population) populacija
+    FROM
+        cities
+    GROUP BY
+        state_id
+) AS gradovi
+ON
+    gradovi.state_id = states.id AND populacija > 1000000
+INNER JOIN(
+    SELECT
+        *
+    FROM
+        states
+    GROUP BY
+        id
+) AS regije
+ON
+    regije.id = gradovi.state_id
+INNER JOIN(
+    SELECT
+        *
+    FROM
+        countries
+    GROUP BY
+        id
+) AS drzave
+ON
+    regije.country_id = drzave.id
+GROUP BY
+    gradovi.state_id
+ORDER BY
+    populacija ASC
+    ____________________________
+
+SELECT countries.name AS 'Naziv drzave', states.name AS 'Naziv regije', SUM(cities.population) AS br_stanovnika
+FROM cities 
+RIGHT JOIN states 
+on cities.state_id = states.id
+LEFT JOIN countries 
+ON states.country_id = countries.id
+GROUP BY states.id
+HAVING br_stanovnika > 1000000
+ORDER BY br_stanovnika
+
+* 8. Napisati upit koji pronalazi 5 regija sa najviše registrovanih gradova, polja koja se prikazuju su: naziv države, naziv regije, broj gradova u regiji:
+
+	SELECT
+    drzave.name AS "Naziv drzave",
+    regije.name AS "Naziv regije",
+    gradovi.amount AS "Broj gradova"
+FROM
+    states
+INNER JOIN(
+    SELECT
+        id,
+        state_id,
+        COUNT(id) AS amount
+    FROM
+        cities
+    GROUP BY
+        state_id
+) AS gradovi
+ON
+    gradovi.state_id = states.id
+INNER JOIN(SELECT *
+FROM
+    states) AS regije
+ON
+    regije.id = gradovi.state_id
+INNER JOIN(
+SELECT
+    id,
+    NAME
+FROM
+    countries
+) AS drzave
+ON
+    regije.country_id = drzave.id
+ORDER BY
+    gradovi.amount
+DESC
+LIMIT 5
+____________________________
+SELECT countries.name AS 'Drzava', states.name AS 'Regija', COUNT(cities.id) AS br_gradova
+FROM cities 
+LEFT JOIN states 
+on cities.state_id = states.id
+LEFT JOIN countries ON states.country_id = countries.id
+GROUP BY states.id
+ORDER BY br_gradova DESC
+LIMIT 5
+
+
+9. Napisati upit koji pronalazi regije sa nijednim unetim gradom (broj gradova je 0), polja koja se prikazuju su: naziv države, naziv regije, broj gradova u regiji:
+
+	SELECT
+    drzave.name 'Naziv drzave',
+    regije.name 'Naziv regije',
+    gradovi.brojGradova 'Broj gradova'
+FROM
+    states
+INNER JOIN(
+    SELECT state_id,
+        COUNT(id) AS brojGradova
+    FROM
+        cities
+    GROUP BY
+        state_id
+) AS gradovi
+ON
+    states.id = gradovi.state_id
+INNER JOIN(
+    SELECT *
+    FROM
+        states
+    GROUP BY
+        id
+) AS regije
+ON
+    regije.id = gradovi.state_id
+INNER JOIN(
+    SELECT *
+    FROM
+        countries
+    GROUP BY
+        id
+) AS drzave
+ON
+    regije.country_id = drzave.id
+WHERE
+    brojGradova = 0
+GROUP BY
+    states.name
+    ____________________________
+
+    SELECT countries.name AS 'Drzava', states.name AS 'Regija', COUNT(cities.id) AS br_gradova
+FROM cities 
+RIGHT JOIN states 
+on cities.state_id = states.id
+LEFT JOIN countries ON states.country_id = countries.id
+GROUP BY states.id
+HAVING br_gradova = 0
+
+* 10. Napisati upit koji pronalazi 5 regija sa najviše registrovanih gradova čiji naziv počinje sa slovom 'r', polja koja se prikazuju su: naziv države, naziv regije, broj gradova u regiji:
+
+	SELECT
+    drzave.name AS "Naziv drzave",
+    regije.name AS "Naziv regije",
+    gradovi.amount AS "Broj gradova"
+FROM
+    states
+INNER JOIN(
+    SELECT
+        id,
+        state_id,
+        COUNT(id) AS amount
+    FROM
+        cities
+    GROUP BY
+        state_id
+) AS gradovi
+ON
+    gradovi.state_id = states.id
+INNER JOIN(SELECT *
+FROM
+    states) AS regije
+ON
+    regije.id = gradovi.state_id AND regije.name LIKE 'r%'
+INNER JOIN(
+SELECT
+    id,
+    NAME
+FROM
+    countries
+) AS drzave
+ON
+    regije.country_id = drzave.id
+ORDER BY
+    gradovi.amount
+DESC
+LIMIT 5
+
+____________________________
+
+SELECT countries.name AS 'Drzava', states.name AS 'Regija', COUNT(cities.id) AS br_gradova
+FROM cities 
+RIGHT JOIN states 
+on cities.state_id = states.id
+LEFT JOIN countries ON states.country_id = countries.id
+GROUP BY states.id 
+HAVING states.name LIKE 'r%'
+ORDER BY br_gradova DESC
+LIMIT 5
+
+
+
+11. Napisati upit koji pronalazi 5 regija sa najviše milionskih gradova (broje se gradovi sa populacijom većom od milion), polja koja se prikazuju su: naziv države, naziv regije, broj gradova u regiji:
+
+	SELECT
+    drzave.name AS "Naziv drzave",
+    regije.name AS "Naziv regije",
+    gradovi.brojgradova AS "Broj gradova"
+FROM
+    states AS regije
+LEFT JOIN(
+    SELECT
+        id,
+        state_id,
+        COUNT(id) AS brojgradova,
+        population AS amount
+    FROM
+        cities
+    GROUP BY
+        state_id
+) AS gradovi
+ON
+    gradovi.state_id = regije.id AND gradovi.amount > 1000000
+LEFT JOIN(
+SELECT
+    id,
+    NAME
+FROM
+    countries
+) AS drzave
+ON
+    regije.country_id = drzave.id
+ORDER BY
+    gradovi.amount
+DESC
+LIMIT 5
+____________________________
+SELECT countries.name AS 'Drzava', states.name AS 'Regija', COUNT(cities.id) AS br_gradova
+FROM cities
+RIGHT JOIN states 
+on cities.state_id = states.id 
+LEFT JOIN countries ON states.country_id = countries.id
+WHERE cities.population > 1000000
+GROUP BY states.id
+ORDER BY br_gradova DESC
+LIMIT 5
+
+
+* 12. Napisati upit koji pronalazi države koje imaju više od 100 regija, polja koja se prikazuju su id države, kratki kod države, naziv države i broj regija:
+
+	SELECT
+    drzave.id 'ID drzave',
+    drzave.shortname 'Kratki kod',
+    drzave.name 'Naziv drzave',
+    regije.brojRegija 'Broj regija'
+FROM
+    countries drzave
+INNER JOIN(
+    SELECT country_id,
+        COUNT(country_id) AS brojRegija
+    FROM
+        states
+    GROUP BY
+        country_id
+) AS regije
+ON
+    regije.country_id = drzave.id AND regije.brojRegija > 100
+GROUP BY
+    drzave.id
+ORDER BY
+    regije.brojRegija
+____________________________
+ 
+ SELECT countries.name AS 'Drzava', COUNT(states.id) AS br_regija FROM states
+RIGHT JOIN countries ON states.country_id = countries.id
+GROUP BY countries.id
+HAVING br_regija > 100
+
+* 13. Napisati upit koji pronalazi države koje imaju više od 10 regija čiji naziv počinje sa slovom 'a', polja koja se prikazuju su id države, kratki kod države, naziv države i broj regija:
+
+	SELECT
+    drzave.id 'ID drzave',
+    drzave.shortname 'Kratki kod',
+    drzave.name 'Naziv drzave',
+    regije.brojRegija 'Broj regija'
+FROM
+    countries
+INNER JOIN(
+    SELECT id,
+        NAME,
+        country_id,
+        COUNT(id) AS brojRegija
+    FROM
+        states
+    WHERE NAME LIKE
+        'a%'
+    GROUP BY
+        country_id
+) AS regije
+ON
+    regije.country_id = countries.id
+INNER JOIN(SELECT *
+FROM
+    countries) AS drzave
+ON
+    regije.country_id = drzave.id
+WHERE
+    regije.brojRegija > 10
+GROUP BY
+    regije.country_id
+ORDER BY
+    regije.brojRegija
+DESC
+____________________________
+SELECT countries.id, countries.shortname, countries.name AS 'Drzava', COUNT(states.id) AS br_regija FROM states
+LEFT JOIN countries ON states.country_id = countries.id WHERE states.name LIKE 'a%'
+GROUP BY countries.id
+HAVING br_regija > 10
+
+
+    
+
+14. Napisati upit koji prikazuje države zajedno sa njihovim brojem stanovnika, sortiranih po broju stanovnika opadajuće, polja koja se prikazuju su id države, kratki kod države, naziv države i broj stanovnika:
+
+	SELECT
+    drzave.id 'ID drzave',
+    drzave.shortname 'Kratki kod drzave',
+    drzave.name 'Naziv drzave',
+    gradovi.brojStanovnika 'Broj stanovnika'
+FROM
+    cities
+INNER JOIN(
+    SELECT id,
+        NAME,
+        country_id
+    FROM
+        states
+) AS regije
+ON
+    regije.id = cities.state_id
+LEFT JOIN(
+    SELECT id,
+        state_id,
+        SUM(population) AS brojStanovnika
+    FROM
+        cities
+    GROUP BY
+        state_id
+) AS gradovi
+ON
+    cities.id = gradovi.id
+LEFT JOIN(
+    SELECT id,
+        NAME,
+        shortname
+    FROM
+        countries
+) AS drzave
+ON
+    regije.country_id = drzave.id
+GROUP BY
+    drzave.id
+ORDER BY
+    gradovi.brojStanovnika
+DESC
+____________________________
+SELECT countries.name, IFNULL(SUM(cities.population), 0)
+FROM cities 
+RIGHT JOIN states on cities.state_id = states.id
+RIGHT JOIN countries ON states.country_id = countries.id
+GROUP BY countries.id
+ORDER BY cities.population DESC
+    
+15. Napisati upit koji pronalazi države koje imaju više od milion stanovnika, polja koja se prikazuju su id države, kratki kod države, naziv države i broj stanovnika:
+
+	SELECT
+    drzave.id 'ID drzave',
+    drzave.shortname 'Kratki kod drzave',
+    drzave.name 'Naziv drzave',
+    gradovi.brojStanovnika 'Broj stanovnika'
+FROM
+    cities
+INNER JOIN(
+    SELECT id,
+        NAME,
+        country_id
+    FROM
+        states
+) AS regije
+ON
+    regije.id = cities.state_id
+INNER JOIN(
+    SELECT id,
+        state_id,
+        SUM(population) AS brojStanovnika
+    FROM
+        cities
+    GROUP BY
+        state_id
+) AS gradovi
+ON
+    cities.id = gradovi.id  AND gradovi.brojStanovnika > 1000000
+INNER JOIN(
+    SELECT id,
+        NAME,
+        shortname
+    FROM
+        countries
+) AS drzave
+ON
+    regije.country_id = drzave.id
+GROUP BY
+    drzave.id
+ORDER BY
+    gradovi.brojStanovnika
+ASC
+____________________________
+SELECT countries.id, countries.name AS 'Drzava', IFNULL(SUM(cities.population), 0) br_stanovnika
+FROM cities 
+RIGHT JOIN states on cities.state_id = states.id
+RIGHT JOIN countries ON states.country_id = countries.id
+GROUP BY countries.id
+HAVING br_stanovnika > 1000000
+ORDER BY br_stanovnika ASC
+
+16. Napisati upit koji prikazuje prvih 5 država sa najviše milionskih gradova:
+
+	SELECT
+    drzave.id 'ID drzave',
+    drzave.shortname 'Kratki kod drzave',
+    drzave.name 'Naziv drzave',
+    gradovi.brojStanovnika 'Broj stanovnika'
+FROM
+    cities
+INNER JOIN(
+    SELECT id,
+        NAME,
+        country_id
+    FROM
+        states
+) AS regije
+ON
+    regije.id = cities.state_id
+INNER JOIN(
+    SELECT id,
+        state_id,
+        SUM(population) AS brojStanovnika
+    FROM
+        cities
+    GROUP BY
+        state_id
+) AS gradovi
+ON
+    cities.id = gradovi.id AND gradovi.brojStanovnika > 1000000
+INNER JOIN(
+    SELECT id,
+        NAME,
+        shortname
+    FROM
+        countries
+) AS drzave
+ON
+    regije.country_id = drzave.id
+GROUP BY
+    drzave.id
+ORDER BY
+    gradovi.brojStanovnika
+DESC
+LIMIT 5
+____________________________
+SELECT countries.name, COUNT(cities.id) AS br_gradova
+FROM cities 
+RIGHT JOIN states on cities.state_id = states.id
+RIGHT JOIN countries ON states.country_id = countries.id
+WHERE cities.population > 1000000
+GROUP BY countries.id
+ORDER BY br_gradova DESC
+LIMIT 5
+
+SELECT countries.name, cities.population FROM cities RIGHT JOIN states ON cities.state_id = states.id
+RIGHT JOIN countries ON states.country_id = countries.id WHERE countries.id = 44
+HAVING cities.population > 1000000
+ORDER BY cities.population DESC provera!!!
+
+	

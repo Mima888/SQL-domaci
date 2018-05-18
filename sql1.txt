@@ -1,0 +1,44 @@
+1. Selektuj sve proizvode koji ili u naslovu ili u opisu imaju reč "sok" :
+	SELECT * FROM `products` WHERE `title`LIKE '%sok%' OR `description` LIKE '%sok%'
+
+2. Selektuj sve proizvode koji su na popustu, a nisu iz kategorije "pice":
+	SELECT * FROM `products` WHERE `discount`>0 AND `category` NOT IN ('pice')
+
+3. Selektuj sve proizvode čiji naslov počinje slovom 'V' i ima tačno 4 karaktera u naslovu:
+	SELECT * FROM `products` WHERE `title` LIKE 'V___'
+
+4. Prikaži sve proizvode prema prioritetu rastuće:
+	SELECT * FROM `products` ORDER BY `priority` ASC
+
+5. Prikaži koja tri proizvoda imaju najveći popust (proučiti LIMIT):
+	SELECT * FROM `products` ORDER BY `discount` DESC LIMIT 3
+
+6. Prikaži koji proizvod je na drugom mestu po popustu (proučiti OFFSET):
+	SELECT * FROM `products` ORDER BY `discount` DESC LIMIT 1 OFFSET 1
+
+7. Selektuj sve sticker-e bez ponavljanja:
+	SELECT DISTINCT `sticker` FROM `products`;
+				ili
+	SELECT `sticker` FROM `products` GROUP BY `sticker`
+
+8. Selektuj sve proizvode iz kategorije "hrana" i sortiraj ih po popustu opadajuće:
+	SELECT * FROM `products` WHERE `category`='Hrana' ORDER BY `discount` DESC
+
+9. Prikaži koliko ima proizvoda u svakoj kategoriji:
+	SELECT `category` AS 'Naziv kategorije',
+	COUNT(*) AS 'Broj artikala'
+	FROM `products`
+	GROUP BY `category`
+
+10. Napisati još 3 zahteva po želji i rešiti ih:
+		
+		a) Prikaži sve proizvode čiji je prioritet veći od 5 ili koji u nazivu imaju zarez:
+			SELECT * FROM `products` WHERE `priority`>5 OR `title` LIKE '%,%'
+
+		b) Prikaži sve proizvode čiji naziv počinje slovima: A, E, K i poređaj ih u opadajućem poretku:
+			SELECT * FROM `products` WHERE LEFT(`title`, 1) IN ('A', 'E', 'K') ORDER BY `title` DESC
+
+		c) Prikaži sve redne brojeve i kategoriju proizvoda, čija je cena između 70 i 300 dinara (zakljucno sa), a prioritet je manji od 7:
+			SELECT `id`, `category` FROM `products` WHERE `price` BETWEEN 70 AND 300 AND `priority` < 7
+
+
